@@ -24,8 +24,12 @@ function InputField() {
         });
         
     }, [])
+    useEffect(()=>{
+        if(!searchText || !newMovies.length || selectedMovie) return
+        document.addEventListener('keydown', onEscapePressed);
+        return ()=> document.removeEventListener('keydown', onEscapePressed);
+    }, [searchText])
     function findMovies(text:string, movies: movies) {
-        console.log('finding movie')
         return  movies.filter((item)=>{
              const {volumeInfo} = item;
              const {title} = volumeInfo;
@@ -40,7 +44,7 @@ function InputField() {
         setSelectedMovie("");
         const text = e.target.value;
         setSearchText(text);
-        const newMovies = findMovies(text, movies);
+        const newMovies = text ? findMovies(text, movies): [];
         setNewMovies(newMovies);
     }
     const handleOptionOnClick = (e:any) => {
@@ -53,14 +57,22 @@ function InputField() {
         setSelectedMovie("");
         document.querySelector('input')?.focus();
     }
+    const handleInputOnBlur = () => {
+        setSelectedMovie("");
+    }
+    const onEscapePressed = (e:KeyboardEvent) => {
+        if(e.key === 'Escape') {
+            setNewMovies([]);
+        }
+    }
   return (
     <>
     <fieldset>
         <legend>Movies</legend>
         <div className="search">
-            <input type='text' onChange={handleInputChange} value={selectedMovie? selectedMovie:searchText} placeholder="Movie"></input>
-            {selectedMovie&&<p className="close button-group" onClick={handleClose}>X</p>}
-            <p className="dropdown button-group">&#x25B2;</p>
+            <input type='text' onChange={handleInputChange} onBlur={handleInputOnBlur} value={selectedMovie? selectedMovie:searchText} placeholder="Movie"></input>
+            {selectedMovie&&<p className="close button-group" onClick={handleClose}>&#x2715;</p>}
+            {selectedMovie? <p className="dropdown button-group">&#x25BC;</p> : <p className="dropdown button-group">&#x25B2;</p>}
         </div>
     </fieldset>
     <div className="movie-list">

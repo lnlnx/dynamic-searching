@@ -1,8 +1,10 @@
 
 fieldset {
     width: 350px;
+    height: 90px;
+    box-sizing: border-box;
 }
-input, select{
+input{
     outline: none;
     border: none;
     width: 100%;
@@ -12,13 +14,22 @@ input, select{
 }
 
 .movie-list {
-    padding-left: 10px;
-    height: 400px;
+    padding-left: 5px;
+    margin-left: 2px;
+    max-height: 400px;
     width: 350px;
     overflow: auto;
+    border: 1px solid lightgray;
+    box-sizing: border-box;
+    p {
+        display: flex;
+        height: 40px;
+        align-items: center;
+        margin: 0px;
+    }
     p:hover{
         cursor: pointer;
-        background-color: gray;
+        background-color: lightcyan;
     }
 }
 .search {
