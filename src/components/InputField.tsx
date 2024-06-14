@@ -10,47 +10,54 @@ interface movie {
 }
 type movies =  movie[];
 
-
 function InputField() {
-  // const [count, setCount] = useState(0)
     const [movies, setMovies] = useState<movies>([]);
-    const [newMovies, setNewMovies] = useState<movies>([]);
+    // const [newMovies, setNewMovies] = useState<movies>([]);
     const [searchText, setSearchText] = useState("");
     const [selectedMovie, setSelectedMovie] = useState("");
+    // useEffect(()=>{
+    //     getMovies().then((res) => {
+    //         const {items} = res;
+    //         setMovies(items);
+    //     });
+        
+    // }, [])
     useEffect(()=>{
-        getMovies().then((res) => {
+        if(!searchText || selectedMovie) {
+            setMovies([]);
+            return
+        }
+        document.addEventListener('keydown', onEscapePressed);
+        getMovies(searchText).then((res) => {
             const {items} = res;
             setMovies(items);
         });
-        
-    }, [])
-    useEffect(()=>{
-        if(!searchText || !newMovies.length || selectedMovie) return
-        document.addEventListener('keydown', onEscapePressed);
         return ()=> document.removeEventListener('keydown', onEscapePressed);
     }, [searchText])
-    function findMovies(text:string, movies: movies) {
-        return  movies.filter((item)=>{
-             const {volumeInfo} = item;
-             const {title} = volumeInfo;
-             const tempAry = title.split(text);
-             if(tempAry.length >=2) {
-                 return item;
-             }
-         })
+    // function findMovies(text:string, movies: movies) {
+    //     return  movies.filter((item)=>{
+    //          const {volumeInfo} = item;
+    //          const {title} = volumeInfo;
+    //          const tempAry = title.split(text);
+    //          if(tempAry.length >=2) {
+    //              return item;
+    //          }
+    //      })
          
-     }
+    //  }
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedMovie("");
-        const text = e.target.value;
-        setSearchText(text);
-        const newMovies = text ? findMovies(text, movies): [];
-        setNewMovies(newMovies);
+        // setTimeout(()=>{
+        setSearchText(e.target.value);
+        // }, 1000)
+        // const newMovies = text ? findMovies(text, movies): [];
+        // setNewMovies(newMovies);
     }
     const handleOptionOnClick = (e:any) => {
         const text = e.target.innerText;
         setSelectedMovie(text);
-        setNewMovies([]);
+        setMovies([]);
+        // setNewMovies([]);
     }
     const handleClose = () => {
         setSearchText("");
@@ -62,7 +69,7 @@ function InputField() {
     }
     const onEscapePressed = (e:KeyboardEvent) => {
         if(e.key === 'Escape') {
-            setNewMovies([]);
+            setMovies([]);
         }
     }
   return (
@@ -76,7 +83,7 @@ function InputField() {
         </div>
     </fieldset>
     <div className="movie-list">
-        {newMovies.map((item: movie)=>{
+        {movies.map((item: movie)=>{
             const {id, volumeInfo} = item;
             return <p key={id} onClick={handleOptionOnClick}>{volumeInfo.title}</p>
         })}
