@@ -15,6 +15,7 @@ function InputField() {
     // const [newMovies, setNewMovies] = useState<movies>([]);
     const [searchText, setSearchText] = useState("");
     const [selectedMovie, setSelectedMovie] = useState("");
+    const [textForDebo, setTextForDebo] = useState("");
     // useEffect(()=>{
     //     getMovies().then((res) => {
     //         const {items} = res;
@@ -28,12 +29,20 @@ function InputField() {
             return
         }
         document.addEventListener('keydown', onEscapePressed);
-        getMovies(searchText).then((res) => {
-            const {items} = res;
-            setMovies(items);
-        });
+        setTimeout(()=>{
+            setTextForDebo(searchText);
+        }, 1000)
         return ()=> document.removeEventListener('keydown', onEscapePressed);
     }, [searchText])
+    useEffect(()=> {
+        if(textForDebo) {
+            getMovies(searchText).then((res) => {
+                const {items} = res;
+                setMovies(items);
+            });
+        }
+        
+    }, [textForDebo]);
     // function findMovies(text:string, movies: movies) {
     //     return  movies.filter((item)=>{
     //          const {volumeInfo} = item;

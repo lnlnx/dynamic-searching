@@ -23,7 +23,7 @@ input{
     box-sizing: border-box;
     p {
         display: flex;
-        height: 40px;
+        min-height: 40px;
         align-items: center;
         margin: 0px;
     }
