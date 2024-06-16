@@ -1,5 +1,5 @@
 // import { useState } from 'react'
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { getMovies } from "../APIs/movies";
 import './field.css';
 interface movie {
@@ -12,71 +12,65 @@ type movies =  movie[];
 
 function InputField() {
     const [movies, setMovies] = useState<movies>([]);
-    // const [newMovies, setNewMovies] = useState<movies>([]);
-    const [searchText, setSearchText] = useState("");
-    const [selectedMovie, setSelectedMovie] = useState("");
-    const [textForDebo, setTextForDebo] = useState("");
-    // useEffect(()=>{
-    //     getMovies().then((res) => {
-    //         const {items} = res;
-    //         setMovies(items);
-    //     });
-        
-    // }, [])
-    useEffect(()=>{
-        if(!searchText || selectedMovie) {
-            setMovies([]);
-            return
-        }
-        document.addEventListener('keydown', onEscapePressed);
-        setTimeout(()=>{
-            setTextForDebo(searchText);
-        }, 1000)
-        return ()=> document.removeEventListener('keydown', onEscapePressed);
-    }, [searchText])
+    const [searchText, setSearchText] = useState<string>("");
+    const [selected, setSelected] = useState(false);
+    const timer = useRef(0);
+    
     useEffect(()=> {
-        if(textForDebo) {
-            getMovies(searchText).then((res) => {
-                const {items} = res;
-                setMovies(items);
-            });
+        //debounce
+        let requestCancelled = false;
+        if(searchText && !selected) {
+            if(timer.current) {
+                clearTimeout(timer.current);
+                timer.current = setTimeout(()=>{
+                    getMovies(searchText).then((res) => {
+                    const {items} = res;
+                    setMovies(items);
+                });
+            }, 500)
+            } else {
+                timer.current = setTimeout(()=>{
+                    getMovies(searchText).then((res) => {
+                    const {items} = res;
+                    setMovies(items);
+                });
+
+            }, 500)
+            }
+        }
+        if(requestCancelled) {
+            clearTimeout(timer.current);
+        }
+        return ()=>{
+            requestCancelled = true;
         }
         
-    }, [textForDebo]);
-    // function findMovies(text:string, movies: movies) {
-    //     return  movies.filter((item)=>{
-    //          const {volumeInfo} = item;
-    //          const {title} = volumeInfo;
-    //          const tempAry = title.split(text);
-    //          if(tempAry.length >=2) {
-    //              return item;
-    //          }
-    //      })
-         
-    //  }
+    }, [searchText]);
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedMovie("");
-        // setTimeout(()=>{
-        setSearchText(e.target.value);
-        // }, 1000)
-        // const newMovies = text ? findMovies(text, movies): [];
-        // setNewMovies(newMovies);
+        const text= e.target.value;
+        setSearchText(text);
+        if(!text){
+            setSelected(false);
+            setMovies([]);
+        }     
     }
-    const handleOptionOnClick = (e:any) => {
-        const text = e.target.innerText;
-        setSelectedMovie(text);
-        setMovies([]);
-        // setNewMovies([]);
-    }
+    
+    const handleOptionOnClick: React.MouseEventHandler<HTMLParagraphElement> = (e) => {
+        const text = e.target as HTMLElement;
+        console.log(text.innerText)
+        setSearchText(text.innerText);
+        setSelected(true);
+    } 
     const handleClose = () => {
         setSearchText("");
-        setSelectedMovie("");
+        setMovies([]);
+        setSelected(false);
         document.querySelector('input')?.focus();
     }
     const handleInputOnBlur = () => {
-        setSelectedMovie("");
+        setMovies([]);
     }
-    const onEscapePressed = (e:KeyboardEvent) => {
+    const onEscapePressed:React.KeyboardEventHandler<HTMLInputElement> = (e) => {
         if(e.key === 'Escape') {
             setMovies([]);
         }
@@ -86,9 +80,9 @@ function InputField() {
     <fieldset>
         <legend>Movies</legend>
         <div className="search">
-            <input type='text' onChange={handleInputChange} onBlur={handleInputOnBlur} value={selectedMovie? selectedMovie:searchText} placeholder="Movie"></input>
-            {selectedMovie&&<p className="close button-group" onClick={handleClose}>&#x2715;</p>}
-            {selectedMovie? <p className="dropdown button-group">&#x25BC;</p> : <p className="dropdown button-group">&#x25B2;</p>}
+            <input type='text' onChange={handleInputChange} onBlur={handleInputOnBlur} onKeyDown={onEscapePressed} value={searchText} placeholder="Movie"></input>
+            {searchText&&<p className="close button-group" onClick={handleClose}>&#x2715;</p>}
+            {searchText? <p className="dropdown button-group">&#x25BC;</p> : <p className="dropdown button-group">&#x25B2;</p>}
         </div>
     </fieldset>
     <div className="movie-list">
